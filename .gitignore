@@ -11,3 +11,7 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+
+# Kopie zapasowe
+backup-*.sql.gz
+pliki-*.tar.gz

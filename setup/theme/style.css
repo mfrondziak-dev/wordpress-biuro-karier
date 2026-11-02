@@ -1,7 +1,7 @@
 /*
 Theme Name: Biuro Praktyk i Karier
 Template: twentytwentyfive
-Version: 1.0.2
+Version: 1.0.3
 */
 
 :root {
@@ -160,6 +160,18 @@ body.home .wp-block-post-content > p {
   max-width: 62ch;
   color: rgb(255 255 255 / 88%);
   font-size: clamp(1.05rem, 2vw, 1.25rem);
+}
+
+/* Linki w treści na ciemnym tle strony głównej */
+body.home .wp-block-post-content p a {
+  color: #fff;
+  text-decoration-color: rgb(255 255 255 / 55%);
+  text-decoration-thickness: 1px;
+}
+
+body.home .wp-block-post-content p a:hover {
+  color: var(--career-mint);
+  text-decoration-color: currentColor;
 }
 
 body.home .wp-block-post-content h2 {

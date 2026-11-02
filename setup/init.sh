@@ -5,6 +5,12 @@ set -e
 
 wp() { command wp --path=/var/www/html --allow-root "$@"; }
 
+# Wartości można nadpisać zmiennymi środowiskowymi (patrz .env.example).
+WP_URL="${WP_URL:-http://localhost:${WP_PORT:-8080}}"
+WP_ADMIN_USER="${WP_ADMIN_USER:-admin}"
+WP_ADMIN_PASSWORD="${WP_ADMIN_PASSWORD:-admin123}"
+WP_ADMIN_EMAIL="${WP_ADMIN_EMAIL:-admin@example.com}"
+
 echo "==> Czekam na pliki WordPressa..."
 i=0
 while [ ! -f /var/www/html/wp-settings.php ]; do
@@ -17,11 +23,11 @@ echo "==> Instalacja WordPressa (czekam na bazę danych)..."
 i=0
 until wp core is-installed >/dev/null 2>&1; do
   wp core install \
-    --url="http://localhost:${WP_PORT:-8080}" \
+    --url="$WP_URL" \
     --title="Biuro Praktyk i Karier — Demo" \
-    --admin_user="admin" \
-    --admin_password="admin123" \
-    --admin_email="admin@example.com" \
+    --admin_user="$WP_ADMIN_USER" \
+    --admin_password="$WP_ADMIN_PASSWORD" \
+    --admin_email="$WP_ADMIN_EMAIL" \
     --skip-email >/dev/null 2>&1 || true
   i=$((i + 1))
   if [ "$i" -gt 90 ]; then echo "ERROR: timeout na bazę danych"; exit 1; fi
@@ -30,6 +36,8 @@ done
 echo "OK: WordPress zainstalowany."
 
 echo "==> Ustawienia podstawowe..."
+wp option update home "$WP_URL" >/dev/null
+wp option update siteurl "$WP_URL" >/dev/null
 wp option update blogname "Biuro Praktyk i Karier" >/dev/null
 wp option update blogdescription "Wsparcie w planowaniu kariery, praktykach i rozwoju zawodowym." >/dev/null
 wp option update timezone_string "Europe/Warsaw" >/dev/null
@@ -48,6 +56,12 @@ create_page() {
     echo "   + utworzono stronę: $slug"
   fi
 }
+
+# Dane logowania bierzemy ze zmiennych środowiskowych — przy ponownym
+# uruchomieniu hasło jest synchronizowane z konfiguracją.
+wp user update "$WP_ADMIN_USER" \
+  --user_pass="$WP_ADMIN_PASSWORD" \
+  --user_email="$WP_ADMIN_EMAIL" >/dev/null 2>&1 || true
 
 echo "==> Przykładowy PDF (wzór porozumienia)..."
 ATT=$(wp post list --post_type=attachment --field=ID 2>/dev/null | head -n 1)

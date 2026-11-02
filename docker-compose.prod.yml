@@ -1,0 +1,30 @@
+# Nakładka produkcyjna.
+#
+# Użycie:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Wymaga pliku .env (wzór: .env.example) oraz Docker Compose >= 2.24
+# (dyrektywa !override).
+services:
+  db:
+    environment:
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Ustaw DB_PASSWORD w pliku .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Ustaw DB_ROOT_PASSWORD w pliku .env}
+
+  wordpress:
+    # Na produkcji WordPress nie może być dostępny bezpośrednio z internetu.
+    # Ruch przychodzi wyłącznie przez reverse proxy (Caddy/Nginx) na localhost.
+    ports: !override
+      - "127.0.0.1:8080:80"
+    environment:
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:?Ustaw DB_PASSWORD w pliku .env}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('DISALLOW_FILE_EDIT', true);
+
+  wp-cli:
+    environment:
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:?Ustaw DB_PASSWORD w pliku .env}
+      WP_URL: ${WP_URL:?Ustaw WP_URL w pliku .env}
+      WP_ADMIN_USER: ${WP_ADMIN_USER:-admin}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD:?Ustaw WP_ADMIN_PASSWORD w pliku .env}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL:?Ustaw WP_ADMIN_EMAIL w pliku .env}
