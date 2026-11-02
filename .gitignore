@@ -1,0 +1,13 @@
+# Sekrety i konfiguracja lokalna
+.env
+docker-compose.override.yml
+
+# Materiały robocze (zawierają dane kontaktowe firm)
+reference/
+
+# Systemowe / edytorowe
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

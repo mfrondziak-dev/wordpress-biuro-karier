@@ -1,0 +1,63 @@
+name: biuro-karier
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: wordpress
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -uroot -p$$MYSQL_ROOT_PASSWORD -e 'SELECT 1' wordpress"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - ./setup/apache-wordpress.conf:/etc/apache2/conf-enabled/wordpress.conf:ro
+      - ./setup/theme:/var/www/html/wp-content/themes/biuro-karier:ro
+
+  # Jednorazowy serwis: instaluje WordPressa i tworzy treść demo
+  # przy pierwszym uruchomieniu (idempotentnie - można uruchamiać wielokrotnie).
+  wp-cli:
+    image: wordpress:cli
+    user: "33:33"
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+      wordpress:
+        condition: service_started
+    environment:
+      WP_PORT: "8080"
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+      - ./setup:/setup:ro
+      - ./setup/theme:/var/www/html/wp-content/themes/biuro-karier:ro
+    command: sh /setup/init.sh
+
+volumes:
+  db_data:
+  wp_data:
