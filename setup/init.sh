@@ -34,7 +34,7 @@ wp option update blogname "Biuro Praktyk i Karier" >/dev/null
 wp option update blogdescription "Wsparcie w planowaniu kariery, praktykach i rozwoju zawodowym." >/dev/null
 wp option update timezone_string "Europe/Warsaw" >/dev/null
 wp rewrite structure '/%postname%/' >/dev/null
-wp theme activate biuro-karier >/dev/null
+wp theme activate biuro-karier >/dev/null 2>&1 || true
 
 create_page() {
   slug="$1"; title="$2"; file="$3"
@@ -73,6 +73,6 @@ if [ -n "$START_ID" ]; then
   wp option update show_on_front page >/dev/null
   wp option update page_on_front "$START_ID" >/dev/null
 fi
-wp rewrite flush --hard >/dev/null
+wp rewrite flush >/dev/null
 
 echo "OK: treść demo gotowa."
